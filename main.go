@@ -65,7 +65,7 @@ func main() {
 		posters := db.FindPosters(movieList)
 		blab.Println()
 		for i, poster := range posters {
-			blab.Println(i+1, poster)
+			blab.Println(fmt.Sprintf("#%d: %s", i+1, poster))
 		}
 		blab.Println()
 	} else {

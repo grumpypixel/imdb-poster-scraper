@@ -15,6 +15,17 @@ import (
 
 const imdbBaseURL = "https://www.imdb.com/"
 
+type ErrorCollector struct {
+	Errors []error
+	mutex  sync.Mutex
+}
+
+func (c *ErrorCollector) Add(err error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.Errors = append(c.Errors, err)
+}
+
 type PosterCollector struct {
 	Posters []*Poster
 	mutex   sync.Mutex
@@ -32,8 +43,9 @@ type Poster struct {
 	Index    int
 }
 
-func (db *IMDB) collectPosters(movieList []string) []*Poster {
-	collector := PosterCollector{}
+func (db *IMDB) collectPosters(movieList []string) ([]*Poster, []error) {
+	posters := PosterCollector{}
+	errors := ErrorCollector{}
 	waitGroup := sync.WaitGroup{}
 	for _, movie := range movieList {
 		waitGroup.Add(1)
@@ -43,19 +55,21 @@ func (db *IMDB) collectPosters(movieList []string) []*Poster {
 				list, err := db.findPoster(movieURL)
 				if err == nil {
 					for i, imageURL := range list {
-						collector.Add(&Poster{MovieURL: movieURL, ImageURL: imageURL, Index: i})
+						posters.Add(&Poster{MovieURL: movieURL, ImageURL: imageURL, Index: i})
 					}
+				} else {
+					errors.Add(err)
 				}
 			}
 			waitGroup.Done()
 		}(movie)
-		time.Sleep(db.WaitBetweenRequests)
 		if db.Verbose {
 			fmt.Printf(".")
 		}
+		time.Sleep(db.WaitBetweenRequests)
 	}
 	waitGroup.Wait()
-	return collector.Posters
+	return posters.Posters, errors.Errors
 }
 
 func (db *IMDB) findPoster(imdbURL string) ([]string, error) {
@@ -86,12 +100,22 @@ func (db *IMDB) findMovieTitle(imdbURL string) (string, error) {
 
 	title := ""
 	doc.Find("h1").Each(func(index int, element *goquery.Selection) {
-		parent := element.Parent()
-		if !parent.Is("div") || !parent.HasClass("title_wrapper") {
+		if title != "" {
 			return
 		}
 		text := element.Text()
-		title = text
+
+		parent := element.Parent()
+		if parent.Is("div") || parent.HasClass("title_wrapper") {
+			title = text
+			return
+		}
+
+		attr, exists := element.Attr("class")
+		if exists && strings.HasPrefix(strings.ToLower(attr), "titleheader") {
+			title = text
+			return
+		}
 	})
 	return strings.TrimSpace(title), nil
 }
@@ -119,10 +143,32 @@ func (db *IMDB) findMediaViewer(imdbURL string) (string, error) {
 			mediaViewerURL = cleanURL(href)
 		}
 	})
-	if mediaViewerURL == "" {
-		return "", fmt.Errorf(fmt.Sprintf("could not find mediaviewer: %s", imdbURL))
+
+	if mediaViewerURL != "" {
+		return mediaViewerURL, nil
 	}
-	return mediaViewerURL, nil
+
+	// meh. try a different approach.
+	titleID, ok := db.titleIDFromURL(imdbURL)
+	prefix := fmt.Sprintf("/title/%s/mediaviewer/", titleID)
+	if ok {
+		doc.Find("a").Each(func(index int, element *goquery.Selection) {
+			href, exists := element.Attr("href")
+			if exists && mediaViewerURL == "" && strings.HasPrefix(href, prefix) {
+				parent := element.Parent()
+				attr, exists := parent.Attr("class")
+				if exists && (strings.Contains(attr, "ipc-poster") || strings.Contains(attr, "poster")) {
+					mediaViewerURL = cleanURL(href)
+				}
+			}
+		})
+	}
+
+	if mediaViewerURL != "" {
+		return mediaViewerURL, nil
+	}
+
+	return "", fmt.Errorf(fmt.Sprintf("could not find mediaviewer: %s", imdbURL))
 }
 
 func (db *IMDB) findPostersInMediaViewer(mediaViewerURL string) ([]string, error) {
@@ -287,57 +333,3 @@ func download(url string, targetDir, filename string, waitGroup *sync.WaitGroup,
 	waitGroup.Done()
 	return nil
 }
-
-// Something for the attic. For the moment at least.
-// var scrapeList StringList
-// flag.Var(&scrapeList, "s", "Scrape all movie links from an IMDB URL")
-// if len(scrapeList) > 0 {
-// 	fmt.Println("Scraping...")
-// 	for _, url := range scrapeList {
-// 		links, err := imdb.ScrapeMovieLinks(url)
-// 		if err != nil {
-// 			fmt.Println(err)
-// 			continue
-// 		}
-// 		if len(links) > 0 {
-// 			movieList = append(movieList, links...)
-// 		}
-// 		time.Sleep(imdb.WaitBetweenRequests)
-// 	}
-// }
-// func (db *IMDB) ScrapeMovieLinks(imdbURL string) ([]string, error) {
-// 	url, ok := db.validateURL(imdbURL)
-// 	if !ok {
-// 		fmt.Println("Invalid IMDB URL:", url)
-// 	}
-
-// 	response, err := http.Get(url)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer response.Body.Close()
-
-// 	doc, err := goquery.NewDocumentFromReader(response.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var links []string
-// 	doc.Find("a").Each(func(index int, element *goquery.Selection) {
-// 		href, exists := element.Attr("href")
-// 		if !exists {
-// 			return
-// 		}
-// 		url := cleanURL(href)
-// 		if !strings.Contains(url, "title/tt") {
-// 			return
-// 		}
-// 		url, ok := db.validateMovieSource(url)
-// 		if !ok {
-// 			fmt.Println("Invalid source:", url)
-// 			return
-// 		}
-// 		links = append(links, url)
-// 	})
-// 	return links, nil
-// }

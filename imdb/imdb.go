@@ -34,7 +34,12 @@ func (p PosterProgress) Done(sourceURL string) {
 }
 
 func (db *IMDB) DownloadPosters(movieList []string, targetDir string, progress webget.ProgressHandler) {
-	posters := db.collectPosters(movieList)
+	posters, errs := db.collectPosters(movieList)
+
+	errors := ErrorCollector{}
+	if len(errs) > 0 {
+		errors.Errors = append(errors.Errors, errs...)
+	}
 
 	waitGroup := sync.WaitGroup{}
 	for _, poster := range posters {
@@ -47,18 +52,23 @@ func (db *IMDB) DownloadPosters(movieList []string, targetDir string, progress w
 
 			err := download(url, targetDir, filename, &waitGroup, progress)
 			if err != nil {
-				if db.Verbose {
-					fmt.Println(err)
-				}
+				errors.Add(err)
 			}
 		}(poster)
 		time.Sleep(db.WaitBetweenRequests)
 	}
 	waitGroup.Wait()
+
+	if db.Verbose {
+		fmt.Println()
+		for _, err := range errors.Errors {
+			fmt.Println(err)
+		}
+	}
 }
 
 func (db *IMDB) FindPosters(movieList []string) []string {
-	posters := db.collectPosters(movieList)
+	posters, _ := db.collectPosters(movieList)
 	var urls []string
 	for _, poster := range posters {
 		urls = append(urls, poster.ImageURL)
