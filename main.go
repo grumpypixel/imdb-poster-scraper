@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	imdb "github.com/grumpypixel/imdb-poster"
+	imdb "github.com/grumpypixel/imdb-poster-go"
 )
 
 type StringList []string

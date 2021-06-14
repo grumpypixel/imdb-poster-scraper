@@ -6,8 +6,8 @@ github.com/grumpypixel/go-webget v0.0.0-20210513194017-df576311f21d h1:ZD475Db8F
 github.com/grumpypixel/go-webget v0.0.0-20210513194017-df576311f21d/go.mod h1:TZ3kzdKP644McT9EqfvX6vRcnoKxAGNJVbUGfDCgbpA=
 github.com/grumpypixel/gofu v0.0.0-20210512205842-0d70775602ad h1:aQ2aCI+n14ARzGLK6uGS/AWJQse3iEPZnreAmzScK/I=
 github.com/grumpypixel/gofu v0.0.0-20210512205842-0d70775602ad/go.mod h1:5aWmbUX78K6AaMMEGqD4SX1UfNdLV+ARncYhOu3p9NM=
-github.com/grumpypixel/imdb-poster v0.0.1 h1:D5zH+VkAnGdfA12t2Ii6DK7NeqJttKvrgM93Dt+gtdQ=
-github.com/grumpypixel/imdb-poster v0.0.1/go.mod h1:Il6nEfiyVAh7AZGEbQ1yqDBgAurffTH7kLcpnIbdd6w=
+github.com/grumpypixel/imdb-poster-go v0.0.2 h1:sXW8IEVfN/S4+fOphqCCyPUUkxQatExbGnNCsWp8a7A=
+github.com/grumpypixel/imdb-poster-go v0.0.2/go.mod h1:2elrH0ZibBAYklmCLqJdYAJGynSAOWcQ+/1eg8lBRiE=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20180218175443-cbe0f9307d01/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20200202094626-16171245cfb2 h1:CCH4IOTTfewWjGOlSp+zGcjutRKlBEZQ6wTn8ozI/nI=
