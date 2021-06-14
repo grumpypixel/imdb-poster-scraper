@@ -1,11 +1,12 @@
 package main
 
 import (
-	"app/imdb"
 	"flag"
 	"fmt"
 	"sync"
 	"time"
+
+	imdb "github.com/grumpypixel/imdb-poster"
 )
 
 type StringList []string
