@@ -9,8 +9,8 @@ import (
 	"unicode"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/grumpypixel/go-utils/stringslice"
 	"github.com/grumpypixel/go-webget"
+	"github.com/grumpypixel/gofu/stringslice"
 )
 
 const imdbBaseURL = "https://www.imdb.com/"
