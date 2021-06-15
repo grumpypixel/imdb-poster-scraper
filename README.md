@@ -22,11 +22,11 @@ $ go build -o imdb-poster-scraper main.go
 
 * --m *IMDB_MOVIE_TITLE_ID_OR_URL* (Specify the movie title ID or the URL of the movie poster you want to be downloaded)
 * --dir *DIRECTORY* (Specify the target directory where the downloaded posters should be saved to)
-* --wait *NUMBER* (Wait for *NUMBER* of milliseconds between requests)
-* --all (Download all poster resolutions, not just the biggest one)
-* --collect (Collect posters only, don't download anything)
-* --id (Search for the movie title and the movie's title identifier)
-* --silent (Stealth mode, don't make a sound)
+* --delay *NUMBER* (Wait for *NUMBER* of milliseconds between requests)
+* --all (Download all poster resolutions, not just the default one)
+* --collect (Collect poster URLs only, don't download anything)
+* --list (List movie title and ID)
+* --shhh (Stealth mode, don't make a sound)
 
 ## Examples
 
@@ -52,7 +52,7 @@ $ go run main.go --dir ./posters -m tt2861424 -m tt0149460 -m tt0245429 --all
 
 ```
 # Wait for 1 second between downloads
-$ go run main.go --dir ./posters -m tt2861424 -m tt0149460 -m tt0245429 --all --wait 1000
+$ go run main.go --dir ./posters -m tt2861424 -m tt0149460 -m tt0245429 --all --delay 1000
 ```
 
 ```
@@ -67,5 +67,5 @@ $ go run main.go --dir ./posters -m tt2861424 -m tt0149460 -m tt0245429 --list
 
 ```
 # Be stealthy, don't say a word, don't make sound.
-$ go run main.go --dir ./posters -m tt2861424 -m tt0149460 -m tt0245429 --silent
+$ go run main.go --dir ./posters -m tt2861424 -m tt0149460 -m tt0245429 --shhh
 ```
